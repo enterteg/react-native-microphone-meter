@@ -1,7 +1,7 @@
-import { requireNativeModule } from 'expo-modules-core';
-
+import { requireNativeModule } from "expo-modules-core";
 
 interface ReactNativeMicrophoneMeterModule {
+  readonly askForPermissions: () => Promise<void>;
   readonly startMonitoringAudio: () => void;
   readonly stopMonitoringAudio: () => void;
   startObserving?: () => void;
@@ -11,4 +11,6 @@ interface ReactNativeMicrophoneMeterModule {
   removeListeners: (count: number) => void;
 }
 
-export default requireNativeModule<ReactNativeMicrophoneMeterModule>('ReactNativeMicrophoneMeter');
+export default requireNativeModule<ReactNativeMicrophoneMeterModule>(
+  "ReactNativeMicrophoneMeter"
+);
