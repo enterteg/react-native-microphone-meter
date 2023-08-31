@@ -23,6 +23,7 @@ internal class RecordingTerminationException: Exception {
 public class ReactNativeMicrophoneMeterModule: Module {
   private var audioRecorder: AVAudioRecorder?
   private var recordingSession: AVAudioSession?
+  private var timer : Timer?
   
   private func captureAudio() throws {
     let temporaryDirectoryURL = FileManager.default.temporaryDirectory
@@ -41,7 +42,7 @@ public class ReactNativeMicrophoneMeterModule: Module {
       audioRecorder.record()
       audioRecorder.isMeteringEnabled = true
       
-      Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+      self.timer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { timer in
         audioRecorder.updateMeters()
         let db = audioRecorder.averagePower(forChannel: 0)
         print(db)
@@ -78,6 +79,7 @@ public class ReactNativeMicrophoneMeterModule: Module {
     
     Function("stopMonitoringAudio") {
       do {
+        self.timer?.invalidate()
         audioRecorder?.stop()
         audioRecorder?.deleteRecording()
         try recordingSession?.setActive(false)
