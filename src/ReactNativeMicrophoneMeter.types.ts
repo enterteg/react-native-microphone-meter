@@ -1,5 +1,5 @@
-export type ChangeEventPayload = {
-  value: string;
+export type OnVolumeChangePayload = {
+  db: number;
 };
 
 export type ReactNativeMicrophoneMeterViewProps = {

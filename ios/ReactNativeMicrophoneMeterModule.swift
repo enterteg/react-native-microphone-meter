@@ -1,44 +1,90 @@
+import AVFoundation
 import ExpoModulesCore
 
+internal class RecordingSessionException: Exception {
+  override var reason: String {
+    "Recording session setup failed"
+  }
+}
+
+internal class AudioCaptureException: Exception {
+  override var reason: String {
+    "Audio capture failed"
+  }
+}
+
+internal class RecordingTerminationException: Exception {
+  override var reason: String {
+    "Stopping the recording failed"
+  }
+}
+
+
 public class ReactNativeMicrophoneMeterModule: Module {
-  // Each module class must implement the definition function. The definition consists of components
-  // that describes the module's functionality and behavior.
-  // See https://docs.expo.dev/modules/module-api for more details about available components.
-  public func definition() -> ModuleDefinition {
-    // Sets the name of the module that JavaScript code will use to refer to the module. Takes a string as an argument.
-    // Can be inferred from module's class name, but it's recommended to set it explicitly for clarity.
-    // The module will be accessible from `requireNativeModule('ReactNativeMicrophoneMeter')` in JavaScript.
-    Name("ReactNativeMicrophoneMeter")
-
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants([
-      "PI": Double.pi
-    ])
-
-    // Defines event names that the module can send to JavaScript.
-    Events("onChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      return "Hello world! 👋"
-    }
-
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { (value: String) in
-      // Send an event to JavaScript.
-      self.sendEvent("onChange", [
-        "value": value
-      ])
-    }
-
-    // Enables the module to be used as a native view. Definition components that are accepted as part of the
-    // view definition: Prop, Events.
-    View(ReactNativeMicrophoneMeterView.self) {
-      // Defines a setter for the `name` prop.
-      Prop("name") { (view: ReactNativeMicrophoneMeterView, prop: String) in
-        print(prop)
+  private var audioRecorder: AVAudioRecorder?
+  private var recordingSession: AVAudioSession?
+  
+  private func captureAudio() throws {
+    let temporaryDirectoryURL = FileManager.default.temporaryDirectory
+    let audioRecordingURL = temporaryDirectoryURL.appendingPathComponent("audioMeterRecording.m4a")
+    
+    let settings = [
+      AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
+      AVSampleRateKey: 12000,
+      AVNumberOfChannelsKey: 1,
+      AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
+    ]
+    
+    do {
+      let audioRecorder = try AVAudioRecorder(url: audioRecordingURL, settings: settings)
+      self.audioRecorder = audioRecorder
+      audioRecorder.record()
+      audioRecorder.isMeteringEnabled = true
+      
+      Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        audioRecorder.updateMeters()
+        let db = audioRecorder.averagePower(forChannel: 0)
+        print(db)
+        self.sendEvent("onVolumeChange", [
+          "db": db
+        ])
       }
+    } catch {
+      throw AudioCaptureException()
+    }
+  }
+  
+  public func definition() -> ModuleDefinition {
+    Name("ReactNativeMicrophoneMeter")
+    
+    Events("onVolumeChange")
+    
+    Function("startMonitoringAudio") {
+      let recordingSession = AVAudioSession.sharedInstance()
+      self.recordingSession = recordingSession
+      do {
+        try recordingSession.setCategory(.record)
+        try recordingSession.setActive(true)
+        
+        recordingSession.requestRecordPermission({ result in
+          guard result else { return }
+        })
+        
+        try captureAudio()
+      } catch {
+        throw RecordingSessionException()
+      }
+    }
+    
+    Function("stopMonitoringAudio") {
+      do {
+        audioRecorder?.stop()
+        audioRecorder?.deleteRecording()
+        try recordingSession?.setActive(false)
+      } catch {
+        throw RecordingTerminationException()
+      }
+      
     }
   }
 }

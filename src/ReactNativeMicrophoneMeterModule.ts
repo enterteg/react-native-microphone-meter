@@ -1,5 +1,14 @@
 import { requireNativeModule } from 'expo-modules-core';
 
-// It loads the native module object from the JSI or falls back to
-// the bridge module (from NativeModulesProxy) if the remote debugger is on.
-export default requireNativeModule('ReactNativeMicrophoneMeter');
+
+interface ReactNativeMicrophoneMeterModule {
+  readonly startMonitoringAudio: () => void;
+  readonly stopMonitoringAudio: () => void;
+  startObserving?: () => void;
+  stopObserving?: () => void;
+
+  addListener: (eventName: string) => void;
+  removeListeners: (count: number) => void;
+}
+
+export default requireNativeModule<ReactNativeMicrophoneMeterModule>('ReactNativeMicrophoneMeter');

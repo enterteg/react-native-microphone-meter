@@ -3,24 +3,21 @@ import { NativeModulesProxy, EventEmitter, Subscription } from 'expo-modules-cor
 // Import the native module. On web, it will be resolved to ReactNativeMicrophoneMeter.web.ts
 // and on native platforms to ReactNativeMicrophoneMeter.ts
 import ReactNativeMicrophoneMeterModule from './ReactNativeMicrophoneMeterModule';
-import ReactNativeMicrophoneMeterView from './ReactNativeMicrophoneMeterView';
-import { ChangeEventPayload, ReactNativeMicrophoneMeterViewProps } from './ReactNativeMicrophoneMeter.types';
+import { OnVolumeChangePayload, ReactNativeMicrophoneMeterViewProps } from './ReactNativeMicrophoneMeter.types';
 
-// Get the native constant value.
-export const PI = ReactNativeMicrophoneMeterModule.PI;
 
-export function hello(): string {
-  return ReactNativeMicrophoneMeterModule.hello();
+export function startMonitoringAudio(): void {
+  ReactNativeMicrophoneMeterModule.startMonitoringAudio();
 }
 
-export async function setValueAsync(value: string) {
-  return await ReactNativeMicrophoneMeterModule.setValueAsync(value);
+export function stopMonitoringAudio(): void {
+  ReactNativeMicrophoneMeterModule.stopMonitoringAudio();
 }
 
-const emitter = new EventEmitter(ReactNativeMicrophoneMeterModule ?? NativeModulesProxy.ReactNativeMicrophoneMeter);
+const emitter = new EventEmitter(ReactNativeMicrophoneMeterModule);
 
-export function addChangeListener(listener: (event: ChangeEventPayload) => void): Subscription {
-  return emitter.addListener<ChangeEventPayload>('onChange', listener);
+export function addOnVolumeChangeListener(listener: (event: OnVolumeChangePayload) => void): Subscription {
+  return emitter.addListener<OnVolumeChangePayload>('onVolumeChange', listener);
 }
 
-export { ReactNativeMicrophoneMeterView, ReactNativeMicrophoneMeterViewProps, ChangeEventPayload };
+export { ReactNativeMicrophoneMeterViewProps, OnVolumeChangePayload };
