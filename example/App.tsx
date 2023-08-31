@@ -1,25 +1,28 @@
-import { useEffect } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from "react";
+import { Button, StyleSheet, Text, View } from "react-native";
 
-import * as ReactNativeMicrophoneMeter from 'react-native-microphone-meter';
+import * as ReactNativeMicrophoneMeter from "react-native-microphone-meter";
 
 export default function App() {
   useEffect(() => {
     ReactNativeMicrophoneMeter.addOnVolumeChangeListener(({ db }) => {
-      console.log('Volume changed', db)
-    })
-  }, [])
+      console.log("Volume changed", db);
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
       <Button
-      title='Start Monitoring'
-      onPress={() => ReactNativeMicrophoneMeter.startMonitoringAudio()}
-    />
+        title="Start Monitoring"
+        onPress={async () => {
+          await ReactNativeMicrophoneMeter.askForPermissions();
+          ReactNativeMicrophoneMeter.startMonitoringAudio();
+        }}
+      />
       <Button
-      title='Stop Monitoring'
-      onPress={() => ReactNativeMicrophoneMeter.stopMonitoringAudio()}
-    />
+        title="Stop Monitoring"
+        onPress={() => ReactNativeMicrophoneMeter.stopMonitoringAudio()}
+      />
     </View>
   );
 }
@@ -27,8 +30,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
