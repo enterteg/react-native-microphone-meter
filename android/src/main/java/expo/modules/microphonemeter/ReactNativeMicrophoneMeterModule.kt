@@ -26,6 +26,16 @@ class ReactNativeMicrophoneMeterModule : Module() {
       "Hello world! 👋"
     }
 
+    Function("startMonitoringAudio"){
+    }
+
+    Function("stopMonitoringAudio"){
+    }
+
+    Function("startObserving"){}
+
+    Function("stopObserving"){}
+
     // Defines a JavaScript function that always returns a Promise and whose native code
     // is by default dispatched on the different thread than the JavaScript runtime runs on.
     AsyncFunction("setValueAsync") { value: String ->
