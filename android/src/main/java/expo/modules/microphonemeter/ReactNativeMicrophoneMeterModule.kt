@@ -19,7 +19,7 @@ class ReactNativeMicrophoneMeterModule : Module() {
   private var bufferSize: Int = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
   private lateinit var audioRecord: AudioRecord
 
-
+  
   private fun processAudioData() {
     val audioData = ShortArray(bufferSize)
     while (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
