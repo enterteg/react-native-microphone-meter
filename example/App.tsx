@@ -1,5 +1,5 @@
 import { Subscription } from 'expo-modules-core';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 
@@ -7,23 +7,23 @@ import Slider from '@react-native-community/slider';
 import { ReactNativeMicrophoneMeter, ReactNativeTorch } from 'react-native-microphone-meter';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming, interpolateColor, useAnimatedReaction, interpolate } from 'react-native-reanimated';
 
-const INTERVAL = 20
+const INTERVAL = 50
 export default function App() {
   const audioListener = useRef<Subscription>()
   const animatedVolume = useSharedValue(-120) // -120 db means silence
   const volumes = useRef<number[]>([])
-
-  useEffect(() => {
-    return () => {
-      stopMonitoringAudio()
-    }
-  })
+  const [bottomLoudnessValue, setBottomLoudnessValue] = useState(-30)
+  const [topLoudnessValue, setTopLoudnessValue] = useState(0)
 
   const onVolumeChange = ({ db }: { db: number }) => {
     animatedVolume.value = withTiming(db, { duration: INTERVAL })
-    const intensity = interpolate(animatedVolume.value, [-30, 0], [0, 1])
+    const intensity = interpolate(animatedVolume.value, [bottomLoudnessValue, topLoudnessValue], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })
     try {
-      ReactNativeTorch.setIntensity(intensity)
+      if (intensity === 0 ){
+        ReactNativeTorch.turnOff()  
+      } else {
+        ReactNativeTorch.setIntensity(intensity)
+      }
     } catch (e) {
       // do nothing on error
     }
@@ -31,6 +31,7 @@ export default function App() {
   
   const startMonitoringAudio = () => {
     try {
+      audioListener.current?.remove()
       audioListener.current = ReactNativeMicrophoneMeter.addOnVolumeChangeListener(onVolumeChange)
       ReactNativeMicrophoneMeter.startMonitoringAudio(INTERVAL)
     } catch (e) {
@@ -43,13 +44,15 @@ export default function App() {
     audioListener.current?.remove()
     try {
       ReactNativeMicrophoneMeter.stopMonitoringAudio()
+      ReactNativeTorch.turnOff()
+      animatedVolume.value = -120
     } catch (e) {
       console.log(e)
     }
   }
 
   const animatedStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(animatedVolume.value, [-40, 0], ['black', 'white'])
+    backgroundColor: interpolateColor(animatedVolume.value, [bottomLoudnessValue, topLoudnessValue], ['gray', 'white'])
   }), [])
 
   return (
@@ -57,27 +60,65 @@ export default function App() {
       <Button
         title='Start Monitoring'
         onPress={startMonitoringAudio}
+        color="violet"
       />
       <Button
         title='Stop Monitoring'
         onPress={stopMonitoringAudio}
+        color="violet"
       />
       <Button
         title='Turn torch on'
         onPress={() => ReactNativeTorch.turnOn()}
+        color="violet"
       />
       <Button
         title='Turn torch off'
         onPress={() => ReactNativeTorch.turnOff()}
+        color="violet"
       />
+      <View style={{ height: 50 }}/>
+      <Text>Meter bottom intensity:</Text>
       <Slider
-        style={{width: 200, height: 40}}
+        style={{width: 200, height: 80}}
+        minimumValue={-120}
+        maximumValue={-1}
+        value={bottomLoudnessValue}
+        minimumTrackTintColor="white"
+        maximumTrackTintColor="blue"
+        onValueChange={(value) => {
+          try {
+            setBottomLoudnessValue(value)
+          } catch (e) {
+            console.log(e)
+          }
+        }}
+      />
+
+      <Text>Meter top intensity ({bottomLoudnessValue})</Text>
+      <Slider
+        style={{width: 200, height: 80}}
+        minimumValue={-119}
+        maximumValue={0}
+        value={topLoudnessValue}
+        minimumTrackTintColor="red"
+        maximumTrackTintColor="white"
+        onValueChange={(value) => {
+          try {
+            setTopLoudnessValue(value)
+          } catch (e) {
+            console.log(e)
+          }
+        }}
+      />
+      <Text>Torch intensity ({ topLoudnessValue })</Text>
+      <Slider
+        style={{width: 200, height: 80}}
         minimumValue={0}
         maximumValue={1}
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#000000"
         onValueChange={(value) => {
-          console.log(value)
           try {
             ReactNativeTorch.setIntensity(value)
           } catch (e) {
