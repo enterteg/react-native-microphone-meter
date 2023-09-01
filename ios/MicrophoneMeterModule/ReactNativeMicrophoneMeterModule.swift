@@ -19,13 +19,12 @@ internal class RecordingTerminationException: Exception {
   }
 }
 
-
 public class ReactNativeMicrophoneMeterModule: Module {
   private var audioRecorder: AVAudioRecorder?
   private var recordingSession: AVAudioSession?
   private var timer : Timer?
   
-  private func captureAudio() throws {
+  private func captureAudio(interval: Int) throws {
     let temporaryDirectoryURL = FileManager.default.temporaryDirectory
     let audioRecordingURL = temporaryDirectoryURL.appendingPathComponent("audioMeterRecording.m4a")
     
@@ -41,11 +40,10 @@ public class ReactNativeMicrophoneMeterModule: Module {
       self.audioRecorder = audioRecorder
       audioRecorder.record()
       audioRecorder.isMeteringEnabled = true
-      
-      self.timer = Timer.scheduledTimer(withTimeInterval: 0.016, repeats: true) { timer in
+      print(interval / 1000)
+      self.timer = Timer.scheduledTimer(withTimeInterval: Double(interval) / 1000.0, repeats: true) { timer in
         audioRecorder.updateMeters()
         let db = audioRecorder.averagePower(forChannel: 0)
-        print(db)
         self.sendEvent("onVolumeChange", [
           "db": db
         ])
@@ -60,7 +58,7 @@ public class ReactNativeMicrophoneMeterModule: Module {
     
     Events("onVolumeChange")
     
-    Function("startMonitoringAudio") {
+    Function("startMonitoringAudio") { (interval: Int) in
       let recordingSession = AVAudioSession.sharedInstance()
       self.recordingSession = recordingSession
       do {
@@ -71,7 +69,7 @@ public class ReactNativeMicrophoneMeterModule: Module {
           guard result else { return }
         })
         
-        try captureAudio()
+        try captureAudio(interval: interval)
       } catch {
         throw RecordingSessionException()
       }

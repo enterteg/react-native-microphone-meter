@@ -1,7 +1,7 @@
 {
   "platforms": ["ios", "android", "web"],
   "ios": {
-    "modules": ["ReactNativeMicrophoneMeterModule"]
+    "modules": ["ReactNativeMicrophoneMeterModule", "ReactNativeTorchModule"]
   },
   "android": {
     "modules": ["expo.modules.microphonemeter.ReactNativeMicrophoneMeterModule"]
