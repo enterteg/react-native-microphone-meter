@@ -16,11 +16,13 @@ export default function App() {
   const animatedVolume = useSharedValue(-120); // db -120 means silence
   const volumes = useRef<number[]>([]);
 
-  const startMonitoringAudio = () => {
+  const startMonitoringAudio = async () => {
     try {
+      await ReactNativeMicrophoneMeter.askForPermissions();
       audioListener.current =
-        ReactNativeMicrophoneMeter.addOnVolumeChangeListener(({ db }) => {
-          animatedVolume.value = withTiming(db, { duration: 16 });
+        ReactNativeMicrophoneMeter.addOnVolumeChangeListener((event) => {
+          console.log(event);
+          animatedVolume.value = withTiming(event.db, { duration: 16 });
         });
       ReactNativeMicrophoneMeter.startMonitoringAudio();
     } catch (e) {

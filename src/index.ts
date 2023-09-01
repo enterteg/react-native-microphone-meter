@@ -32,5 +32,4 @@ export function addOnVolumeChangeListener(
   return emitter.addListener<OnVolumeChangePayload>("onVolumeChange", listener);
 }
 
-
 export { ReactNativeMicrophoneMeterViewProps, OnVolumeChangePayload };

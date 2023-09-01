@@ -4,12 +4,14 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
+import androidx.core.view.KeyEventDispatcher
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.util.Arrays
 import java.util.jar.Manifest
+import kotlin.math.log10
 
 class ReactNativeMicrophoneMeterModule : Module() {
 
@@ -19,17 +21,37 @@ class ReactNativeMicrophoneMeterModule : Module() {
   private var bufferSize: Int = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
   private lateinit var audioRecord: AudioRecord
 
-  
   private fun processAudioData() {
     val audioData = ShortArray(bufferSize)
+    var lastRms = 0.0
     while (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-      audioRecord.read(audioData, 0, bufferSize)
+      val status = audioRecord.read(audioData, 0, bufferSize)
 
-      // Here you can process the audio data
-      System.out.println(Arrays.toString((audioData)))
+      // Here we calculate RMS.
+      var sum = 0.0
+      for (i in 0 until status) {
+        sum += audioData[i] * audioData[i]
+      }
+      val maxAmplitude = 32767.0 // max 16 bit value
+      val rms = Math.sqrt(sum / status)
+      // Differentiate between RMS and lastRms to detect changes, but we need to convert RMS to decibels.
+      val dB = 20 * log10(rms / maxAmplitude)
+
+      // Update lastRms
+      lastRms = rms
+
+      val volumeChanged = dB >= lastRms  // this should be set according to requirement
+      if (true) {
+        onVolumeChanged(dB)
+      }
     }
   }
 
+  private fun onVolumeChanged(db: Double) {
+    // Here you can trigger the event `onVolumeChanged` for the volume change
+    // For example using eventbus library posting an event, or using any other library of your choice to send notifications
+    sendEvent("onVolumeChange", mapOf("db" to db))
+  }
 
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
@@ -48,7 +70,7 @@ class ReactNativeMicrophoneMeterModule : Module() {
     )
 
     // Defines event names that the module can send to JavaScript.
-    Events("onChange")
+    Events("onVolumeChange")
 
     // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
     Function("hello") {
@@ -87,15 +109,6 @@ class ReactNativeMicrophoneMeterModule : Module() {
     Function("startObserving"){}
 
     Function("stopObserving"){}
-
-    // Defines a JavaScript function that always returns a Promise and whose native code
-    // is by default dispatched on the different thread than the JavaScript runtime runs on.
-    AsyncFunction("setValueAsync") { value: String ->
-      // Send an event to JavaScript.
-      sendEvent("onChange", mapOf(
-        "value" to value
-      ))
-    }
 
     // Enables the module to be used as a native view. Definition components that are accepted as part of
     // the view definition: Prop, Events.
