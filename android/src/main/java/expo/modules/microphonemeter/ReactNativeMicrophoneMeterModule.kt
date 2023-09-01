@@ -64,25 +64,15 @@ class ReactNativeMicrophoneMeterModule : Module() {
     // The module will be accessible from `requireNativeModule('ReactNativeMicrophoneMeter')` in JavaScript.
     Name("ReactNativeMicrophoneMeter")
 
-    // Sets constant properties on the module. Can take a dictionary or a closure that returns a dictionary.
-    Constants(
-      "PI" to Math.PI
-    )
-
     // Defines event names that the module can send to JavaScript.
     Events("onVolumeChange")
-
-    // Defines a JavaScript synchronous function that runs the native code on the JavaScript thread.
-    Function("hello") {
-      "Hello world! 👋"
-    }
 
     AsyncFunction("askForPermissions") {promise: Promise ->
       var result = Permissions.askForPermissionsWithPermissionsManager(appContext.permissions, promise,
               android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
               android.Manifest.permission.RECORD_AUDIO)
     }
-    Function("startMonitoringAudio"){
+    Function("startMonitoringAudio"){ interval: Double -> 
       //setContentView(R.layout.activity_main)
 
       try {
