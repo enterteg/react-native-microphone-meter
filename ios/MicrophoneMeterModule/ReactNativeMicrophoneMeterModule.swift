@@ -23,18 +23,18 @@ public class ReactNativeMicrophoneMeterModule: Module {
   private var audioRecorder: AVAudioRecorder?
   private var recordingSession: AVAudioSession?
   private var timer : Timer?
-  
+
   private func captureAudio(interval: Int) throws {
     let temporaryDirectoryURL = FileManager.default.temporaryDirectory
     let audioRecordingURL = temporaryDirectoryURL.appendingPathComponent("audioMeterRecording.m4a")
-    
+
     let settings = [
       AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
       AVSampleRateKey: 12000,
       AVNumberOfChannelsKey: 1,
       AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue
     ]
-    
+
     do {
       let audioRecorder = try AVAudioRecorder(url: audioRecordingURL, settings: settings)
       self.audioRecorder = audioRecorder
@@ -52,29 +52,33 @@ public class ReactNativeMicrophoneMeterModule: Module {
       throw AudioCaptureException()
     }
   }
-  
+
   public func definition() -> ModuleDefinition {
     Name("ReactNativeMicrophoneMeter")
-    
+
     Events("onVolumeChange")
-    
+
+    Function("askForPermissions"){
+      // empty function for compatibility with Android, so iOS does not break when we call it
+    }
+
     Function("startMonitoringAudio") { (interval: Int) in
       let recordingSession = AVAudioSession.sharedInstance()
       self.recordingSession = recordingSession
       do {
         try recordingSession.setCategory(.record)
         try recordingSession.setActive(true)
-        
+
         recordingSession.requestRecordPermission({ result in
           guard result else { return }
         })
-        
+
         try captureAudio(interval: interval)
       } catch {
         throw RecordingSessionException()
       }
     }
-    
+
     Function("stopMonitoringAudio") {
       do {
         self.timer?.invalidate()
@@ -84,7 +88,7 @@ public class ReactNativeMicrophoneMeterModule: Module {
       } catch {
         throw RecordingTerminationException()
       }
-      
+
     }
   }
 }

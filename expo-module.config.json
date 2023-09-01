@@ -4,6 +4,6 @@
     "modules": ["ReactNativeMicrophoneMeterModule", "ReactNativeTorchModule"]
   },
   "android": {
-    "modules": ["expo.modules.microphonemeter.ReactNativeMicrophoneMeterModule"]
+    "modules": ["expo.modules.microphonemeter.ReactNativeMicrophoneMeterModule", "expo.modules.microphonemeter.ReactNativeTorchModule"]
   }
 }

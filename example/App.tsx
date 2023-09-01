@@ -1,6 +1,6 @@
 import { Subscription } from 'expo-modules-core';
 import { useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, Platform, StyleSheet, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 
 
@@ -27,29 +27,32 @@ export default function App() {
     } catch (e) {
       // do nothing on error
     }
-  }
-  
-  const startMonitoringAudio = () => {
+  };
+
+  const startMonitoringAudio = async () => {
     try {
+      if (Platform.OS  === 'android') {
+        await ReactNativeMicrophoneMeter.askForPermissions();
+      }
       audioListener.current?.remove()
       audioListener.current = ReactNativeMicrophoneMeter.addOnVolumeChangeListener(onVolumeChange)
       ReactNativeMicrophoneMeter.startMonitoringAudio(INTERVAL)
     } catch (e) {
-      console.log(e)
-    } 
-  }
+      console.log(e);
+    }
+  };
 
   const stopMonitoringAudio = () => {
-    volumes.current = []
-    audioListener.current?.remove()
+    volumes.current = [];
+    audioListener.current?.remove();
     try {
       ReactNativeMicrophoneMeter.stopMonitoringAudio()
       ReactNativeTorch.turnOff()
       animatedVolume.value = -120
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
-  }
+  };
 
   const animatedStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(animatedVolume.value, [bottomLoudnessValue, topLoudnessValue], ['gray', 'white'])
@@ -57,6 +60,9 @@ export default function App() {
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
+      <Button title="Start Monitoring" onPress={startMonitoringAudio} />
+      <Button title="Stop Monitoring" onPress={stopMonitoringAudio} />
+      <Button title="Turn torch on" onPress={() => ReactNativeTorch.turnOn()} />
       <Button
         title='Start Monitoring'
         onPress={startMonitoringAudio}
@@ -120,9 +126,9 @@ export default function App() {
         maximumTrackTintColor="#000000"
         onValueChange={(value) => {
           try {
-            ReactNativeTorch.setIntensity(value)
+            ReactNativeTorch.setIntensity(value);
           } catch (e) {
-            console.log(e)
+            console.log(e);
           }
         }}
       />
@@ -133,7 +139,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
