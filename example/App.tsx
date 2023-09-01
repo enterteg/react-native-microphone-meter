@@ -60,9 +60,6 @@ export default function App() {
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      <Button title="Start Monitoring" onPress={startMonitoringAudio} />
-      <Button title="Stop Monitoring" onPress={stopMonitoringAudio} />
-      <Button title="Turn torch on" onPress={() => ReactNativeTorch.turnOn()} />
       <Button
         title='Start Monitoring'
         onPress={startMonitoringAudio}
@@ -84,7 +81,7 @@ export default function App() {
         color="violet"
       />
       <View style={{ height: 50 }}/>
-      <Text>Meter bottom intensity:</Text>
+      <Text>Meter bottom intensity ({bottomLoudnessValue})</Text>
       <Slider
         style={{width: 200, height: 80}}
         minimumValue={-120}
@@ -101,7 +98,7 @@ export default function App() {
         }}
       />
 
-      <Text>Meter top intensity ({bottomLoudnessValue})</Text>
+      <Text>Meter top intensity ({ topLoudnessValue })</Text>
       <Slider
         style={{width: 200, height: 80}}
         minimumValue={-119}
@@ -117,7 +114,7 @@ export default function App() {
           }
         }}
       />
-      <Text>Torch intensity ({ topLoudnessValue })</Text>
+      <Text>Torch intensity:</Text>
       <Slider
         style={{width: 200, height: 80}}
         minimumValue={0}
