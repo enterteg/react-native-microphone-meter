@@ -10,11 +10,6 @@ import expo.modules.kotlin.modules.ModuleDefinition
 import kotlin.math.roundToInt
 
 class ReactNativeTorchModule : Module() {
-    // Each module class must implement the definition function. The definition consists of components
-    // that describes the module's functionality and behavior.
-    // See https://docs.expo.dev/modules/module-api for more details about available components.
-
-
     private fun getCameraManager(): CameraManager {
         val cameraManager: CameraManager = appContext.reactContext?.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
@@ -37,7 +32,6 @@ class ReactNativeTorchModule : Module() {
 
 
             cameraManager.turnOnTorchWithStrengthLevel(rearCameraId, 1)
-            // cameraManager.turnOnTorchWithStrengthLevel(rearCameraId, cameraCharacteristics.get(FLASH_INFO_STRENGTH_MAXIMUM_LEVEL))
             Unit
         }
 
@@ -45,7 +39,7 @@ class ReactNativeTorchModule : Module() {
             var cameraManager = getCameraManager()
             val cameraIds: Array<String> = cameraManager.cameraIdList
             val rearCameraId = cameraIds[0]
-            cameraManager.turnOnTorchWithStrengthLevel(rearCameraId, 0)
+            cameraManager.setTorchMode(rearCameraId, false);
         }
 
         Function("setIntensity") { intensity: Double ->
