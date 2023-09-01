@@ -87,6 +87,7 @@ export default function App() {
         onValueChange={(value) => {
           console.log(value);
           try {
+            console.log(value);
             ReactNativeTorch.setIntensity(value);
           } catch (e) {
             console.log(e);
