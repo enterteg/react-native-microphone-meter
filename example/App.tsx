@@ -85,7 +85,6 @@ export default function App() {
         minimumTrackTintColor="#FFFFFF"
         maximumTrackTintColor="#000000"
         onValueChange={(value) => {
-          console.log(value);
           try {
             console.log(value);
             ReactNativeTorch.setIntensity(value);
